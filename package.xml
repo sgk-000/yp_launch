@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>yp_tools</name>
+  <name>yp_launch</name>
   <version>1.0.0</version>
-  <description>The yp_tools package</description>
+  <description>The yp_launch package</description>
   <maintainer email="s12400148@gmail.com">ShigekiKobayashi</maintainer>
   <author>Shigeki Kobayashi</author>
   <license>BSD</license>
