@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="driver_param_file" default="$(find-pkg-share ypspur_ros_bridge)/config/driver_speego_param.yaml" />
+  <arg name="rviz" default="true" doc="launch rviz"/>
+
+  <!-- TODO: add vehicle_model -->
+  <include file="$(find-pkg-share ypspur_ros_bridge)/launch/ypspur_ros_bridge_speego.launch.xml">
+    <arg name="driver_param_file" value="$(var driver_param_file)"/>
+  </include>
+
+  <include file="$(find-pkg-share teleop_twist_joy)/launch/teleop-launch.py"/>
+
+  <include file="$(find-pkg-share urg_node)/launch/urg_node_launch.py"/>
+
+  <include file="$(find-pkg-share yp_launch)/launch/static_broadcaster_base2laser_launch.py"/>
+
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" if="$(var rviz)" />
+</launch>
