@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>yp_tools</name>
+  <version>1.0.0</version>
+  <description>The yp_tools package</description>
+  <maintainer email="s12400148@gmail.com">ShigekiKobayashi</maintainer>
+  <author>Shigeki Kobayashi</author>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>geometry_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
