@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="driver_param_file" default="$(find-pkg-share ypspur_ros_bridge)/config/driver_speego_param.yaml" />
+  <arg name="robot_model"/>
   <arg name="rviz" default="true" doc="launch rviz"/>
 
-  <!-- TODO: add vehicle_model -->
   <include file="$(find-pkg-share ypspur_ros_bridge)/launch/ypspur_ros_bridge_speego.launch.xml">
-    <arg name="driver_param_file" value="$(var driver_param_file)"/>
+    <arg name="robot_model" value="$(var robot_model)"/>
   </include>
 
   <include file="$(find-pkg-share teleop_twist_joy)/launch/teleop-launch.py"/>
