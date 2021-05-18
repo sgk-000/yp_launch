@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="use_sim_time" default="false"/>
   <arg name="robot_model"/>
+  <arg name="model" default="$(find-pkg-share yp_robot_config)/urdf/$(var robot_model).urdf.xacro"/>
   <arg name="rviz" default="true" doc="launch rviz"/>
-  <arg name="model" default="$(find-pkg-share yp_robot_config)/urdf/beego.urdf.xacro"/>
+  <arg name="autostart" default="false"/>
+  <arg name="map" default="/home/shigeki/data/sb/map/sb_entire.yaml"/>
+  <arg name="params_file" default="$(find-pkg-share nav2_bringup)/params/nav2_$(var robot_model)_params.yaml"/>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher">
         <param name="robot_description" value="$(command 'xacro $(var model)')"/>
   </node>
-  <include file="$(find-pkg-share ypspur_ros_bridge)/launch/ypspur_ros_bridge_speego.launch.xml">
+
+  <include file="$(find-pkg-share ypspur_ros_bridge)/launch/ypspur_ros_bridge.launch.xml">
     <arg name="robot_model" value="$(var robot_model)"/>
   </include>
 
-  <include file="$(find-pkg-share teleop_twist_joy)/launch/teleop-launch.py"/>
-
   <include file="$(find-pkg-share urg_node)/launch/urg_node_launch.py"/>
 
-  <include file="$(find-pkg-share yp_launch)/launch/static_broadcaster_base2laser_launch.py"/>
-
-  <include file="$(find-pkg-share slam_toolbox)/launch/online_sync_launch.py">
-    <arg name="use_sim_time" value="false"/>
+  <include file="$(find-pkg-share nav2_bringup)/launch/bringup_launch.py">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+    <arg name="autostart" value="$(var autostart)"/>
+    <arg name="map" value="$(var map)"/>
+    <arg name="params_file" value="$(var params_file)"/>
   </include>
 
-  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" if="$(var rviz)" />
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share nav2_bringup)/rviz/yp_nav2.rviz" if="$(var rviz)" />
 </launch>

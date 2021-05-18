@@ -3,7 +3,7 @@
   <arg name="robot_model"/>
   <arg name="rviz" default="true" doc="launch rviz"/>
 
-  <include file="$(find-pkg-share ypspur_ros_bridge)/launch/ypspur_ros_bridge_speego.launch.xml">
+  <include file="$(find-pkg-share ypspur_ros_bridge)/launch/ypspur_ros_bridge.launch.xml">
     <arg name="robot_model" value="$(var robot_model)"/>
   </include>
 
