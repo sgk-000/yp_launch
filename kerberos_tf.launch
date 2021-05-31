@@ -1,0 +1,17 @@
+<launch>
+	<!-- pi -->
+	<arg name="pi"   default="3.14159"/>
+	<arg name="pi_4" default="0.78540"/>
+	<arg name="pi_6" default="0.52360"/>
+
+	<!-- transform -->
+	<node pkg="tf" type="static_transform_publisher" name="base2vlp16" args="0.315  0.00  0.90  0.00  0.00  0.00  base_link  velodyne  100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_front_left" args="0.67  0.16  0.26  0.6377  0.00  $(arg pi)  base_link  laser_front_left  100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_front_right" args="0.67  -0.16  0.26  -0.8262  0.00  $(arg pi)  base_link  laser_front_right  100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_back" args="-0.12  0.00  0.20  $(arg pi)  0.00  $(arg pi)  base_link  laser_back  100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2hokuyo3d" args="0.465  0.00  0.85  0.00  0.02  -3.16  base_link  hokuyo3d  100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base2imu" args="0.340  0.032  0.361  0.00  0.00  0.00  base_link  imu  100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2magellan_gnss_antenna" args="0.315  0.00  1.01  0.00  0.00  0.00  base_link  magellan_gnss_antenna  100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_urm"       args="0.37  0.0  0.60  0.0  0.0  $(arg pi)  base_link  laser_urm  100"/>
+
+</launch>
