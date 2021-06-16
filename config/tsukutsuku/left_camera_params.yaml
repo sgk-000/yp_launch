@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    video_device: "/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920_FE705E1F-video-index0"
+    framerate: 30.0
+    io_method: "mmap"
+    frame_id: "left_camera"
+    pixel_format: "yuyv"
+    image_width: 640
+    image_height: 480
+    camera_name: "left_cam"

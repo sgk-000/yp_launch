@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="robot_model" default="" />
+  <arg name="model" default="$(find-pkg-share yp_robot_config)/urdf/tsukutsuku.urdf.xacro" />
+  <!-- <arg name="sensors_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/sensors_params.yaml" /> -->
+  <arg name="velodyne_lower_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/velodyne_lower_params.yaml" />
+  <arg name="center_camera_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/center_camera_params.yaml" />
+  <arg name="left_camera_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/left_camera_params.yaml" />
+  <arg name="right_camera_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/right_camera_params.yaml" />
+  <arg name="rear_laser_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/laser_rear_params.yaml" />
+  <arg name="front_left_laser_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/laser_front_left_params.yaml" />
+  <arg name="front_right_laser_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/laser_front_right_params.yaml" />
+  <arg name="rear_laser_params_file" default="$(find-pkg-share yp_launch)/config/tsukutsuku/laser_rear_params.yaml" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name="robot_description" value="$(command 'xacro $(var model)')" />
+  </node>
+
+    <include file="$(find-pkg-share velodyne)/launch/velodyne-all-nodes-VLP16-launch.py">
+        <param from="$(var sensors_params_file)" />
+      </include>
+     
+  <group>
+    <push-ros-namespace namespace="center_camera" />
+    <node name="center_usb_cam_node" pkg="usb_cam" exec="usb_cam_node" output="screen">
+      <param from="$(var center_camera_params_file)" />
+    </node>
+  </group>
+  <group>
+    <push-ros-namespace namespace="left_camera" />
+    <node name="left_usb_cam_node" pkg="usb_cam" exec="usb_cam_node" output="screen">
+      <param from="$(var left_camera_params_file)" />
+    </node>
+  </group>
+  <group>
+    <push-ros-namespace namespace="right_camera" />
+    <node name="right_usb_cam_node" pkg="usb_cam" exec="usb_cam_node" output="screen">
+      <param from="$(var right_camera_params_file)" />
+    </node>
+  </group>
+  <group>
+    <push-ros-namespace namespace="front_left_laser" />
+    <node name="front_left_urg_node" pkg="urg_node" exec="urg_node_driver" output="screen">
+      <param from="$(var front_left_laser_params_file)" />
+    </node>
+  </group>
+  <group>
+    <push-ros-namespace namespace="front_right_laser" />
+    <node name="front_right_urg_node" pkg="urg_node" exec="urg_node_driver" output="screen">
+      <param from="$(var front_right_laser_params_file)" />
+    </node>
+  </group>
+  <group>
+    <push-ros-namespace namespace="rear_laser" />
+    <node name="rear_urg_node" pkg="urg_node" exec="urg_node_driver" output="screen">
+      <param from="$(var rear_laser_params_file)" />
+    </node>
+  </group>
+
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen"/>
+
+</launch>
