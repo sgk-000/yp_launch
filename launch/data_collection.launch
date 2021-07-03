@@ -1,76 +1,114 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="model" default="$(find yp_robot_config)/urdf/tsukutsuku.urdf.xacro"/>
-    <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <arg name="model" default="$(find yp_robot_config)/urdf/tsukutsuku.urdf.xacro" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 
+  <arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml" />
+  <arg name="velodyne_upper_device_ip" default="192.168.1.201" />
+  <arg name="velodyne_lower_device_ip" default="192.168.1.202" />
+  <arg name="velodyne_upper_frame_id" default="velodyne_upper" />
+  <arg name="velodyne_lower_frame_id" default="velodyne_lower" />
+  <arg name="velodyne_upper_port" default="2368" />
+  <arg name="velodyne_lower_port" default="2369" />
 
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <arg name="velodyne_upper_manager" default="$(arg velodyne_upper_frame_id)_nodelet_manager" />
+  <arg name="velodyne_lower_manager" default="$(arg velodyne_lower_frame_id)_nodelet_manager" />
+  <arg name="max_range" default="130.0" />
+  <arg name="min_range" default="0.4" />
+  <arg name="pcap" default="" />
+  <arg name="read_fast" default="false" />
+  <arg name="read_once" default="false" />
+  <arg name="repeat_delay" default="0.0" />
+  <arg name="rpm" default="600.0" />
+  <arg name="gps_time" default="false" />
+  <arg name="pcap_time" default="false" />
+  <arg name="cut_angle" default="-0.01" />
+  <arg name="timestamp_first_packet" default="false" />
+  <arg name="laserscan_ring" default="-1" />
+  <arg name="laserscan_resolution" default="0.007" />
+  <arg name="organize_cloud" default="false" />
 
-    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-    <node name="center_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
-        <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:11:1.0-video-index0" />
-        <param name="image_width" value="640" />
-        <param name="image_height" value="480" />
-        <param name="pixel_format" value="yuyv" />
-        <param name="camera_frame_id" value="center_camera" />
-        <param name="io_method" value="mmap"/>
+  <group ns="velodyne_upper">
+    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
+      <arg name="device_ip" value="$(arg velodyne_upper_device_ip)" />
+      <arg name="frame_id" value="$(arg velodyne_upper_frame_id)" />
+      <arg name="port" value="$(arg velodyne_upper_port)"/>
+    </include>
+  </group>
+
+  <group ns="velodyne_lower">
+    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
+      <arg name="device_ip" value="$(arg velodyne_lower_device_ip)" />
+      <arg name="frame_id" value="$(arg velodyne_lower_frame_id)" />
+      <arg name="port" value="$(arg velodyne_lower_port)" />
+    </include>
+  </group>
+
+  <node name="center_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+    <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:11:1.0-video-index0" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="center_camera" />
+    <param name="io_method" value="mmap" />
+  </node>
+  <node name="left_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+    <param name="video_device" value="/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920_FE705E1F-video-index0" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="left_camera" />
+    <param name="io_method" value="mmap" />
+  </node>
+  <node name="right_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+    <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="right_camera" />
+    <param name="io_method" value="mmap" />
+  </node>
+
+  <group ns="front_left_urg">
+    <node name="front_left_urg_node" pkg="urg_node" type="urg_node" output="screen">
+      <param name="ip_address" value="" />
+      <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:3:1.0" />
+      <param name="serial_baud" value="115200" />
+      <param name="frame_id" value="laser_front_left" />
+      <param name="calibrate_time" value="true" />
+      <param name="publish_intensity" value="false" />
+      <param name="publish_multiecho" value="false" />
+      <param name="angle_min" value="-1.5707963" />
+      <param name="angle_max" value="1.5707963" />
     </node>
-      <node name="left_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
-        <param name="video_device" value="/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920_FE705E1F-video-index0" />
-        <param name="image_width" value="640" />
-        <param name="image_height" value="480" />
-        <param name="pixel_format" value="yuyv" />
-        <param name="camera_frame_id" value="left_camera" />
-        <param name="io_method" value="mmap"/>
-      </node>
-      <node name="right_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
-        <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0" />
-        <param name="image_width" value="640" />
-        <param name="image_height" value="480" />
-        <param name="pixel_format" value="yuyv" />
-        <param name="camera_frame_id" value="right_camera" />v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0
-        <param name="io_method" value="mmap"/>
-      </node>
-
-    <group ns="front_left_urg">
-      <node name="front_left_urg_node" pkg="urg_node" type="urg_node" output="screen">
-        <param name="ip_address" value=""/>
-        <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:3:1.0"/>
-        <param name="serial_baud" value="115200"/>
-        <param name="frame_id" value="laser_front_left"/>
-        <param name="calibrate_time" value="true"/>
-        <param name="publish_intensity" value="false"/>
-        <param name="publish_multiecho" value="false"/>
-        <param name="angle_min" value="-1.5707963"/>
-        <param name="angle_max" value="1.5707963"/>
-      </node>
-    </group>
-    <group ns="front_right_urg">
-      <node name="front_right_urg_node" pkg="urg_node" type="urg_node" output="screen">
-        <param name="ip_address" value=""/>
-        <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:2.4:1.0"/>
-        <param name="serial_baud" value="115200"/>
-        <param name="frame_id" value="laser_front_right"/>
-        <param name="calibrate_time" value="true"/>
-        <param name="publish_intensity" value="false"/>
-        <param name="publish_multiecho" value="false"/>
-        <param name="angle_min" value="-1.5707963"/>
-        <param name="angle_max" value="1.5707963"/>
-      </node>
-    </group>
-    <group ns="rear_urg">
-      <node name="rear_urg_node" pkg="urg_node" type="urg_node" output="screen">
-        <param name="ip_address" value=""/>
-        <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:4:1.0"/>
-        <param name="serial_baud" value="115200"/>
-        <param name="frame_id" value="laser_rear"/>
-        <param name="calibrate_time" value="true"/>
-        <param name="publish_intensity" value="false"/>
-        <param name="publish_multiecho" value="false"/>
-        <param name="angle_min" value="-1.5707963"/>
-        <param name="angle_max" value="1.5707963"/>
-      </node>
-    </group>
+  </group>
+  <group ns="front_right_urg">
+    <node name="front_right_urg_node" pkg="urg_node" type="urg_node" output="screen">
+      <param name="ip_address" value="" />
+      <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:2.4:1.0" />
+      <param name="serial_baud" value="115200" />
+      <param name="frame_id" value="laser_front_right" />
+      <param name="calibrate_time" value="true" />
+      <param name="publish_intensity" value="false" />
+      <param name="publish_multiecho" value="false" />
+      <param name="angle_min" value="-1.5707963" />
+      <param name="angle_max" value="1.5707963" />
+    </node>
+  </group>
+  <group ns="rear_urg">
+    <node name="rear_urg_node" pkg="urg_node" type="urg_node" output="screen">
+      <param name="ip_address" value="" />
+      <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:4:1.0" />
+      <param name="serial_baud" value="115200" />
+      <param name="frame_id" value="laser_rear" />
+      <param name="calibrate_time" value="true" />
+      <param name="publish_intensity" value="false" />
+      <param name="publish_multiecho" value="false" />
+      <param name="angle_min" value="-1.5707963" />
+      <param name="angle_max" value="1.5707963" />
+    </node>
+  </group>
 </launch>
