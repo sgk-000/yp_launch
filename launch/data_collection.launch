@@ -4,7 +4,7 @@
   <arg name="model" default="$(find yp_robot_config)/urdf/tsukutsuku.urdf.xacro" />
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 
-  <arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml" />
+  <arg name="launch_driver" default="true" />
   <arg name="velodyne_upper_device_ip" default="192.168.1.201" />
   <arg name="velodyne_lower_device_ip" default="192.168.1.202" />
   <arg name="velodyne_upper_frame_id" default="velodyne_upper" />
@@ -12,103 +12,157 @@
   <arg name="velodyne_upper_port" default="2368" />
   <arg name="velodyne_lower_port" default="2369" />
 
-  <arg name="velodyne_upper_manager" default="$(arg velodyne_upper_frame_id)_nodelet_manager" />
-  <arg name="velodyne_lower_manager" default="$(arg velodyne_lower_frame_id)_nodelet_manager" />
-  <arg name="max_range" default="130.0" />
-  <arg name="min_range" default="0.4" />
-  <arg name="pcap" default="" />
-  <arg name="read_fast" default="false" />
-  <arg name="read_once" default="false" />
-  <arg name="repeat_delay" default="0.0" />
-  <arg name="rpm" default="600.0" />
-  <arg name="gps_time" default="false" />
-  <arg name="pcap_time" default="false" />
-  <arg name="cut_angle" default="-0.01" />
-  <arg name="timestamp_first_packet" default="false" />
-  <arg name="laserscan_ring" default="-1" />
-  <arg name="laserscan_resolution" default="0.007" />
-  <arg name="organize_cloud" default="false" />
+  <arg name="front_left_urg_port"             default = "/dev/serial/by-path/pci-0000:04:00.0-usb-0:3:1.0" />
+  <arg name="front_left_urg_frame_id"             default = "laser_front_left" />
+  <arg name="front_right_urg_port"             default = "/dev/serial/by-path/pci-0000:04:00.0-usb-0:2.4:1.0" />
+  <arg name="front_right_urg_frame_id"             default = "laser_front_right" />
+  <arg name="rear_urg_port"             default = "/dev/serial/by-path/pci-0000:04:00.0-usb-0:4:1.0" />
+  <arg name="rear_urg_frame_id"             default = "laser_rear" />
+
+  <arg name="left_point_grey_port"             default = "0" />
+  <arg name="left_point_grey_frame_id"             default = "left_camera" />
+  <arg name="right_point_grey_port"             default = "1" />
+  <arg name="right_point_grey_frame_id"             default = "right_camera" />
+
+  <arg name="imu_name"             default = "gx5" />
+  <arg name="imu_port"             default = "/dev/serial/by-path/pci-0000:04:00.0-usb-0:2.2:1.0" />
+  <arg name="baudrate"         default = "115200" />
+  <arg name="debug"            default = "false" />
+  <arg name="diagnostics"      default = "true" />  
+  <arg name="imu_frame_id"     default = "imu" />
+  <arg name="imu_data_rate"    default = "400" />
+  <arg name="filter_data_rate" default = "10" />
+
+  <group ns="vehicle_info">
+    <rosparam command="load" file="$(find yp_robot_config)/config/tsukutsuku/vehicle_info.yaml" />
+    <node name="additional_vehicle_info_generator" pkg="additional_vehicle_info_generator" type="additional_vehicle_info_generator" output="log" />
+
+    <group ns="mirror">
+      <rosparam command="load" file="$(find yp_robot_config)/config/tsukutsuku/mirror.yaml" />
+    </group>
+  </group>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-  <group ns="velodyne_upper">
-    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
-      <arg name="device_ip" value="$(arg velodyne_upper_device_ip)" />
-      <arg name="frame_id" value="$(arg velodyne_upper_frame_id)" />
-      <arg name="port" value="$(arg velodyne_upper_port)"/>
-    </include>
-  </group>
+  <include file="$(find teleop_twist_joy)/launch/teleop.launch" />
 
-  <group ns="velodyne_lower">
-    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
-      <arg name="device_ip" value="$(arg velodyne_lower_device_ip)" />
-      <arg name="frame_id" value="$(arg velodyne_lower_frame_id)" />
-      <arg name="port" value="$(arg velodyne_lower_port)" />
-    </include>
-  </group>
+  <include file="$(find ypspur_ros_bridge)/launch/ypspur_ros_bridge.launch" />
+  
 
-  <node name="center_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
-    <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:11:1.0-video-index0" />
-    <param name="image_width" value="640" />
-    <param name="image_height" value="480" />
-    <param name="pixel_format" value="yuyv" />
-    <param name="camera_frame_id" value="center_camera" />
-    <param name="io_method" value="mmap" />
-  </node>
-  <node name="left_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
-    <param name="video_device" value="/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920_FE705E1F-video-index0" />
-    <param name="image_width" value="640" />
-    <param name="image_height" value="480" />
-    <param name="pixel_format" value="yuyv" />
-    <param name="camera_frame_id" value="left_camera" />
-    <param name="io_method" value="mmap" />
-  </node>
-  <node name="right_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
-    <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0" />
-    <param name="image_width" value="640" />
-    <param name="image_height" value="480" />
-    <param name="pixel_format" value="yuyv" />
-    <param name="camera_frame_id" value="right_camera" />
-    <param name="io_method" value="mmap" />
-  </node>
+  <group ns="sensing">
+    <group ns="velodyne_upper">
+      <include file="$(find sensing_launch)/launch/velodyne_VLP16.launch">
+        <arg name="sensor_frame" default="$(arg velodyne_upper_frame_id)" />
+        <arg name="device_ip" value="192.168.1.201" />
+        <arg name="port" value="2368" />
+        <arg name="launch_driver" value="$(arg launch_driver)" />
+      </include>
+    </group>
 
-  <group ns="front_left_urg">
-    <node name="front_left_urg_node" pkg="urg_node" type="urg_node" output="screen">
-      <param name="ip_address" value="" />
-      <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:3:1.0" />
-      <param name="serial_baud" value="115200" />
-      <param name="frame_id" value="laser_front_left" />
-      <param name="calibrate_time" value="true" />
-      <param name="publish_intensity" value="false" />
-      <param name="publish_multiecho" value="false" />
-      <param name="angle_min" value="-1.5707963" />
-      <param name="angle_max" value="1.5707963" />
+    <group ns="velodyne_lower">
+      <include file="$(find sensing_launch)/launch/velodyne_VLP16.launch">
+        <arg name="sensor_frame" default="$(arg velodyne_lower_frame_id)" />
+        <arg name="device_ip" value="192.168.1.202" />
+        <arg name="port" value="2369" />
+        <arg name="launch_driver" value="$(arg launch_driver)" />
+      </include>
+    </group>
+
+
+    <group ns="front_left_urg">
+      <node name="front_left_urg_node" pkg="urg_node" type="urg_node" output="screen">
+        <param name="ip_address" value="" />
+        <param name="serial_port" value="$(arg front_left_urg_port)" />
+        <param name="serial_baud" value="115200" />
+        <param name="frame_id" value="$(arg front_left_urg_frame_id)" />
+        <param name="calibrate_time" value="true" />
+        <param name="publish_intensity" value="false" />
+        <param name="publish_multiecho" value="false" />
+        <param name="angle_min" value="-1.5707963" />
+        <param name="angle_max" value="1.5707963" />
+      </node>
+    </group>
+    <group ns="front_right_urg">
+      <node name="front_right_urg_node" pkg="urg_node" type="urg_node" output="screen">
+        <param name="ip_address" value="" />
+        <param name="serial_port" value="$(arg front_right_urg_port)" />
+        <param name="serial_baud" value="115200" />
+        <param name="frame_id" value="$(arg front_right_urg_frame_id)" />
+        <param name="calibrate_time" value="true" />
+        <param name="publish_intensity" value="false" />
+        <param name="publish_multiecho" value="false" />
+        <param name="angle_min" value="-1.5707963" />
+        <param name="angle_max" value="1.5707963" />
+      </node>
+    </group>
+    <group ns="rear_urg">
+      <node name="rear_urg_node" pkg="urg_node" type="urg_node" output="screen">
+        <param name="ip_address" value="" />
+        <param name="serial_port" value="$(arg rear_urg_port)" />
+        <param name="serial_baud" value="115200" />
+        <param name="frame_id" value="$(arg rear_urg_frame_id)" />
+        <param name="calibrate_time" value="true" />
+        <param name="publish_intensity" value="false" />
+        <param name="publish_multiecho" value="false" />
+        <param name="angle_min" value="-1.5707963" />
+        <param name="angle_max" value="1.5707963" />
+      </node>
+    </group>
+
+      <group ns="left_point_grey">
+        <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
+          <arg name="camera_name" default="left_point_grey" />
+          <arg name="camera_serial" default="$(arg left_point_grey_port)" />
+          <arg name="frame_id" default="$(arg left_point_grey_frame_id)" />
+        </include>
+      </group>
+      <group ns="right_point_grey">
+        <include file="$(find pointgrey_camera_driver)/launch/camera.launch">
+          <arg name="camera_name" default="right_point_grey" />
+          <arg name="camera_serial" default="$(arg right_point_grey_port)" />
+          <arg name="frame_id" default="$(arg right_point_grey_frame_id)" />
+        </include>
+      </group>
+
+      <group ns="imu">
+        <include file="$(find ros_mscl)/launch/microstrain.launch">
+          <arg name="name" value="$(arg imu_name)" />
+          <arg name="port" value="$(arg imu_port)" />
+          <arg name="baudrate" value="$(arg baudrate)" />
+          <arg name="debug" value="$(arg debug)" />
+          <arg name="diagnostics" value="$(arg diagnostics)" />
+          <arg name="imu_frame_id" value="$(arg imu_frame_id)" />
+          <arg name="imu_data_rate" value="$(arg imu_data_rate)" />
+          <arg name="filter_data_rate" value="$(arg filter_data_rate)" />
+        </include>
+      </group>
+    
+    <!-- <node name="center_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+      <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:11:1.0-video-index0" />
+      <param name="image_width" value="640" />
+      <param name="image_height" value="480" />
+      <param name="pixel_format" value="yuyv" />
+      <param name="camera_frame_id" value="center_camera" />
+      <param name="io_method" value="mmap" />
     </node>
-  </group>
-  <group ns="front_right_urg">
-    <node name="front_right_urg_node" pkg="urg_node" type="urg_node" output="screen">
-      <param name="ip_address" value="" />
-      <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:2.4:1.0" />
-      <param name="serial_baud" value="115200" />
-      <param name="frame_id" value="laser_front_right" />
-      <param name="calibrate_time" value="true" />
-      <param name="publish_intensity" value="false" />
-      <param name="publish_multiecho" value="false" />
-      <param name="angle_min" value="-1.5707963" />
-      <param name="angle_max" value="1.5707963" />
+    <node name="left_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+      <param name="video_device" value="/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920_FE705E1F-video-index0" />
+      <param name="image_width" value="640" />
+      <param name="image_height" value="480" />
+      <param name="pixel_format" value="yuyv" />
+      <param name="camera_frame_id" value="left_camera" />
+      <param name="io_method" value="mmap" />
     </node>
-  </group>
-  <group ns="rear_urg">
-    <node name="rear_urg_node" pkg="urg_node" type="urg_node" output="screen">
-      <param name="ip_address" value="" />
-      <param name="serial_port" value="/dev/serial/by-path/pci-0000:02:00.0-usb-0:4:1.0" />
-      <param name="serial_baud" value="115200" />
-      <param name="frame_id" value="laser_rear" />
-      <param name="calibrate_time" value="true" />
-      <param name="publish_intensity" value="false" />
-      <param name="publish_multiecho" value="false" />
-      <param name="angle_min" value="-1.5707963" />
-      <param name="angle_max" value="1.5707963" />
-    </node>
+    <node name="right_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+      <param name="video_device" value="/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0" />
+      <param name="image_width" value="640" />
+      <param name="image_height" value="480" />
+      <param name="pixel_format" value="yuyv" />
+      <param name="camera_frame_id" value="right_camera" />
+      <param name="io_method" value="mmap" />
+    </node> -->
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find yp_launch)/rviz/tsukutsuku.rviz" />
+
   </group>
 </launch>
