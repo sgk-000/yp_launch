@@ -14,12 +14,15 @@
   <arg name="velodyne_upper_port" default="2369" />
   <arg name="velodyne_lower_port" default="2368" />
 
-  <arg name="front_left_urg_port" default="/dev/serial/by-path/pci-0000:04:00.0-usb-0:3:1.0" />
+  <arg name="front_left_urg_param_file" default="$(find-pkg-share tsukutsuku_launch)/configs/sensing/front_left_urg.yaml" />
+  <arg name="front_right_urg_param_file" default="$(find-pkg-share tsukutsuku_launch)/configs/sensing/front_right_urg.yaml" />
+  <arg name="rear_urg_param_file" default="$(find-pkg-share tsukutsuku_launch)/configs/sensing/rear_urg.yaml" />
+  <!-- <arg name="front_left_urg_port" default="/dev/serial/by-path/pci-0000:04:00.0-usb-0:3:1.0" />
   <arg name="front_left_urg_frame_id" default="laser_front_left" />
   <arg name="front_right_urg_port" default="/dev/serial/by-path/pci-0000:04:00.0-usb-0:2.4:1.0" />
   <arg name="front_right_urg_frame_id" default="laser_front_right" />
   <arg name="rear_urg_port" default="/dev/serial/by-path/pci-0000:04:00.0-usb-0:4:1.0" />
-  <arg name="rear_urg_frame_id" default="laser_rear" />
+  <arg name="rear_urg_frame_id" default="laser_rear" /> -->
 
   <arg name="left_point_grey_port" default="0" />
   <arg name="left_point_grey_frame_id" default="left_camera" />
@@ -34,7 +37,7 @@
   <arg name="imu_frame_id" default="imu_link" />
   <arg name="filter_frame_id" default="imu_link" />
   <arg name="imu_data_rate" default="300" />
-  <arg name="filter_data_rate" default="25" />
+  <arg name="filter_data_rate" default="50" />
 
   <group>
     <push-ros-namespace namespace="velodyne_lower" />
@@ -47,15 +50,27 @@
       <arg name="vehicle_mirror_param_file" value="$(var vehicle_mirror_param_file)" />
     </include>
   </group>
+<!-- 
+  <group>
+    <push-ros-namespace namespace="velodyne_upper" />
+    <include file="$(find-pkg-share sensing_launch)/launch/velodyne_VLP16.launch.xml">
+      <arg name="sensor_frame" value="$(var velodyne_upper_frame_id)" />
+      <arg name="device_ip" value="$(var velodyne_upper_device_ip)" />
+      <arg name="port" value="$(var velodyne_upper_port)" />
+      <arg name="launch_driver" value="$(var launch_driver)" />
+      <arg name="vehicle_param_file" value="$(var vehicle_param_file)" />
+      <arg name="vehicle_mirror_param_file" value="$(var vehicle_mirror_param_file)" />
+    </include>
+  </group> -->
 
   <group>
     <push-ros-namespace namespace="microstrain_imu" />
     <include file="$(find-pkg-share microstrain_inertial_driver)/launch/microstrain_launch.py">
-      <arg name="name" value="$(var imu_name)" />
+      <arg name="configure" value="true" />
+      <arg name="activate" value="true" />
+      <arg name="namespace" value="$(var imu_name)" />
       <arg name="port" value="$(var imu_port)" />
       <arg name="baudrate" value="$(var baudrate)" />
-      <arg name="debug" value="$(var debug)" />
-      <arg name="diagnostics" value="$(var diagnostics)" />
       <arg name="imu_frame_id" value="$(var imu_frame_id)" />
       <arg name="filter_frame_id" value="$(var filter_frame_id)" />
       <arg name="imu_data_rate" value="$(var imu_data_rate)" />
@@ -63,7 +78,23 @@
     </include>
   </group>
 
-
-  <!-- <include file="$(find-pkg-share urg_node)/launch/urg_node_launch.py"/> -->
+  <group>
+    <push-ros-namespace namespace="front_left_urg" />
+    <include file="$(find-pkg-share urg_node)/launch/urg_lidar.launch.xml">
+      <arg name="param_file" value="$(var front_left_urg_param_file)" />
+    </include>
+  </group>
+  <!-- <group>
+    <push-ros-namespace namespace="front_right_urg" />
+    <include file="$(find-pkg-share urg_node)/launch/urg_lidar.launch.xml">
+      <arg name="param_file" value="$(var front_right_urg_param_file)" />
+    </include>
+  </group> -->
+  <group>
+    <push-ros-namespace namespace="rear_urg" />
+    <include file="$(find-pkg-share urg_node)/launch/urg_lidar.launch.xml">
+      <arg name="param_file" value="$(var rear_urg_param_file)" />
+    </include>
+  </group>
 
 </launch>
